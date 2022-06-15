@@ -17,6 +17,7 @@ Route::group(['namespace' => 'Message'], function () {
         });
         // api
         Route::group(['prefix' => 'api/message'], function () {
+            Route::post('/init', [MessageController::class, 'init']);
             Route::post('/send', [MessageController::class, 'send']);
         });
     });

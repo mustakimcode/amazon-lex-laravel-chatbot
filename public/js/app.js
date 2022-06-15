@@ -5460,42 +5460,72 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   data: function data() {
     return {
       messages: [],
-      slots: {},
       newMessage: "",
       isEnded: false
     };
   },
+  created: function created() {
+    this.initChat();
+  },
   methods: {
-    addMessage: function addMessage(message) {
+    initChat: function initChat() {
       var _this = this;
+
+      axios.post("api/message/init").then(function (response) {
+        _this.fetchMessage(response.data.messages);
+
+        _this.newMessage = "";
+      });
+    },
+    addMessage: function addMessage(message) {
+      var _this2 = this;
 
       axios.post("api/message/send", {
         message: message
       }).then(function (response) {
         if (response.data.dialogState == "ReadyForFulfillment") {
-          _this.isEnded = true;
-          _this.slots = response.data.slots;
+          _this2.isEnded = true;
+          setTimeout(_this2.isEnded = true, 2000);
           setTimeout(function () {
             window.location = "/home";
-          }, 3000);
+          }, 5000);
         }
 
-        if (response.data.messages) {
-          response.data.messages.forEach(function (element) {
-            _this.messages.push(element);
-          });
-        }
+        _this2.fetchMessage(response.data.messages);
 
-        _this.newMessage = "";
+        _this2.newMessage = "";
       });
     },
     sendMessage: function sendMessage() {
       if (this.newMessage.trim()) {
         this.addMessage(this.newMessage);
+      }
+    },
+    fetchMessage: function fetchMessage(messages) {
+      var _this3 = this;
+
+      if (messages) {
+        messages.forEach(function (element) {
+          _this3.messages.push(element);
+        });
       }
     }
   }
@@ -28241,30 +28271,37 @@ var render = function () {
             ? _c("div", { staticClass: "card-body" }, [
                 _c(
                   "div",
-                  { staticClass: "row mb-3" },
+                  { staticClass: "row mb-2" },
                   [
                     _vm._l(_vm.messages, function (message) {
-                      return _c("div", { staticClass: "mb-12" }, [
-                        _c(
-                          "label",
-                          {
-                            staticClass: "col-md-12 text-md-start",
-                            attrs: { for: "email" },
-                          },
-                          [
-                            _vm._v(
-                              _vm._s(
-                                message.sender_name
-                                  ? message.sender_name
-                                  : "you"
-                              ) +
-                                " :\n\t\t\t\t\t\t\t\t\t" +
-                                _vm._s(message.message) +
-                                "\n\t\t\t\t\t\t\t\t"
-                            ),
-                          ]
-                        ),
-                      ])
+                      return _c(
+                        "div",
+                        { key: message.id, staticClass: "mb-12" },
+                        [
+                          _c(
+                            "label",
+                            {
+                              class:
+                                message.sender_name == message.sender_id
+                                  ? "col-md-12 text-md-start"
+                                  : "col-md-12 text-md-end",
+                              attrs: { for: "email" },
+                            },
+                            [
+                              _vm._v(
+                                _vm._s(
+                                  message.sender_name
+                                    ? message.sender_name
+                                    : "You"
+                                ) +
+                                  " :\n\t\t\t\t\t\t\t\t" +
+                                  _vm._s(message.message) +
+                                  "\n\t\t\t\t\t\t\t"
+                              ),
+                            ]
+                          ),
+                        ]
+                      )
                     }),
                     _vm._v(" "),
                     _c("br"),
@@ -28319,67 +28356,58 @@ var render = function () {
                 ]),
               ])
             : _c("div", { staticClass: "card-body" }, [
-                _c("div", { staticClass: "row mb-3" }, [
-                  _c(
-                    "label",
-                    {
-                      staticClass: "col-md-12 text-md-start",
-                      attrs: { for: "email" },
-                    },
-                    [
-                      _vm._v(
-                        "\n\t\t\t\t\t\t\t\tEmail : " +
-                          _vm._s(_vm.slots["Email"]) +
-                          "\n\t\t\t\t\t\t\t"
-                      ),
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "label",
-                    {
-                      staticClass: "col-md-12 text-md-start",
-                      attrs: { for: "firstname" },
-                    },
-                    [
-                      _vm._v(
-                        "\n\t\t\t\t\t\t\t\tFirstName : " +
-                          _vm._s(_vm.slots["FirstName"]) +
-                          "\n\t\t\t\t\t\t\t"
-                      ),
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "label",
-                    {
-                      staticClass: "col-md-12 text-md-start",
-                      attrs: { for: "lastname" },
-                    },
-                    [
-                      _vm._v(
-                        "\n\t\t\t\t\t\t\t\tLastName : " +
-                          _vm._s(_vm.slots["LastName"]) +
-                          "\n\t\t\t\t\t\t\t"
-                      ),
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c("br"),
-                  _vm._v(" "),
-                  _c(
-                    "label",
-                    {
-                      staticClass: "col-md-12 text-md-start",
-                      attrs: { for: "notice" },
-                    },
-                    [
-                      _vm._v(
-                        "\n\t\t\t\t\t\t\tchating session is done, this page will redirected in seconds!!\n\t\t\t\t\t\t\t"
-                      ),
-                    ]
-                  ),
-                ]),
+                _c(
+                  "div",
+                  { staticClass: "row mb-2" },
+                  [
+                    _vm._l(_vm.messages, function (message) {
+                      return _c(
+                        "div",
+                        { key: message.id, staticClass: "mb-12" },
+                        [
+                          _c(
+                            "label",
+                            {
+                              class:
+                                message.sender_name == message.sender_id
+                                  ? "col-md-12 text-md-start"
+                                  : "col-md-12 text-md-end",
+                              attrs: { for: "email" },
+                            },
+                            [
+                              _vm._v(
+                                _vm._s(
+                                  message.sender_name
+                                    ? message.sender_name
+                                    : "You"
+                                ) +
+                                  " :\n\t\t\t\t\t\t\t\t" +
+                                  _vm._s(message.message) +
+                                  "\n\t\t\t\t\t\t\t"
+                              ),
+                            ]
+                          ),
+                        ]
+                      )
+                    }),
+                    _vm._v(" "),
+                    _c("br"),
+                    _vm._v(" "),
+                    _c(
+                      "label",
+                      {
+                        staticClass: "col-md-12 text-md-start",
+                        attrs: { for: "notice" },
+                      },
+                      [
+                        _vm._v(
+                          "\n\t\t\t\t\t\t\tchating session is done, this page will redirected in seconds!!\n\t\t\t\t\t\t"
+                        ),
+                      ]
+                    ),
+                  ],
+                  2
+                ),
               ]),
         ]),
       ]),

@@ -6,10 +6,20 @@
 					<div class="card-header">Chat Component</div>
 
 					<div class="card-body" v-if="!isEnded">
-						<div class="row mb-3">
-							<div class="mb-12" v-for="message in messages">
-								<label for="email" class="col-md-12 text-md-start"
-									>{{ message.sender_name ? message.sender_name : "you" }} :
+						<div class="row mb-2">
+							<div
+								class="mb-12"
+								v-for="message in messages"
+								v-bind:key="message.id"
+							>
+								<label
+									for="email"
+									:class="
+										message.sender_name == message.sender_id
+											? 'col-md-12 text-md-start'
+											: 'col-md-12 text-md-end'
+									"
+									>{{ message.sender_name ? message.sender_name : "You" }} :
 									{{ message.message }}
 								</label>
 							</div>
@@ -30,22 +40,26 @@
 						</div>
 					</div>
 					<div class="card-body" v-else>
-						<div class="row mb-3">
-							<label for="email" class="col-md-12 text-md-start">
-								Email : {{ slots["Email"] }}
-							</label>
-
-							<label for="firstname" class="col-md-12 text-md-start">
-								FirstName : {{ slots["FirstName"] }}
-							</label>
-
-							<label for="lastname" class="col-md-12 text-md-start">
-								LastName : {{ slots["LastName"] }}
-							</label>
-
-<br>
+						<div class="row mb-2">
+							<div
+								class="mb-12"
+								v-for="message in messages"
+								v-bind:key="message.id"
+							>
+								<label
+									for="email"
+									:class="
+										message.sender_name == message.sender_id
+											? 'col-md-12 text-md-start'
+											: 'col-md-12 text-md-end'
+									"
+									>{{ message.sender_name ? message.sender_name : "You" }} :
+									{{ message.message }}
+								</label>
+							</div>
+							<br />
 							<label for="notice" class="col-md-12 text-md-start">
-							chating session is done, this page will redirected in seconds!!
+								chating session is done, this page will redirected in seconds!!
 							</label>
 						</div>
 					</div>
@@ -60,31 +74,43 @@
 		data() {
 			return {
 				messages: [],
-				slots: {},
 				newMessage: "",
 				isEnded: false,
 			};
 		},
+		created() {
+			this.initChat();
+		},
 		methods: {
+			initChat() {
+				axios.post("api/message/init").then((response) => {
+					this.fetchMessage(response.data.messages);
+					this.newMessage = "";
+				});
+			},
 			addMessage(message) {
 				axios.post("api/message/send", { message }).then((response) => {
 					if (response.data.dialogState == "ReadyForFulfillment") {
 						this.isEnded = true;
-						this.slots = response.data.slots;
-						setTimeout(function(){ window.location = "/home"; },3000);
+						setTimeout((this.isEnded = true), 2000);
+						setTimeout(function () {
+							window.location = "/home";
+						}, 5000);
 					}
-					if (response.data.messages) {
-						response.data.messages.forEach((element) => {
-							this.messages.push(element);
-						});
-					}
-
+					this.fetchMessage(response.data.messages);
 					this.newMessage = "";
 				});
 			},
 			sendMessage() {
 				if (this.newMessage.trim()) {
 					this.addMessage(this.newMessage);
+				}
+			},
+			fetchMessage(messages) {
+				if (messages) {
+					messages.forEach((element) => {
+						this.messages.push(element);
+					});
 				}
 			},
 		},
